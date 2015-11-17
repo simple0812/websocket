@@ -1,0 +1,453 @@
+<html>
+<style>
+	body {background:#fff; position:relative; width:501px; height:601px; border:1px solid #000;}
+	.live { width:20px; height:20px; border:1px solid blue; background:red; position:absolute;}
+	.field { width:20px; height:20px; border:1px solid #eee; background:yellow; position:absolute;}
+	.die { width:20px; height:20px; border:1px solid blue; background:black; position:absolute; display:block }
+	.suspend { position:absolute; z-index:300; }
+</style>
+<body>
+	<input type ="button" value ="ÔÝÍ£" id ="suspend" class = "suspend" onclick="suspend(this)"/>
+</body>
+</html>
+<script>
+
+
+		var stop = false;	
+		var isover= false;
+		var rows= 25;
+		var cols = 15;
+		
+		var shapes =["0,1,1,1,2,1,3,1","1,0,1,1,1,2,2,2","2,0,2,1,2,2,1,2","0,1,1,1,1,2,2,2","1,2,2,2,2,1,3,1","1,1,2,1,1,2,2,2","0,2,1,2,1,1,2,2"];
+		var shapet;
+		var shapel;
+		var interval;
+		
+		var shape = new Array();
+		
+		var wi = new Array();
+	
+		function createField(){		
+			for(var i =0;i<rows;i++)
+			{
+				wi[i] = new Array();
+				
+				for(var j=0;j<cols;j++)
+				{
+					var sd =document.createElement("span");
+					sd.className ="field";
+					sd.style.top=i*20;
+					sd.style.left=j*20;
+					document.body.appendChild(sd);
+					wi[i][j]=sd;
+					
+				}
+				
+			}
+			
+			
+			var su = document.getElementById("suspend");
+			su.style.top=rows*20 + 60;
+			su.style.left=60;
+			
+		}
+		
+		function suspend(obj){
+			if(!isover)
+			{
+				if(!stop )
+				{
+					stop =true;
+					obj.value ="¿ªÊ¼";
+					clearInterval(interval);
+				}
+				else
+				{
+					stop = false;
+					obj.value ="ÔÝÍ£";
+					interval =window.setInterval("move()",200);
+				}
+				
+			}
+			
+		}
+		
+		
+		function create(top,left){
+			
+				var sd =document.createElement("div");
+				sd.className ="live";
+				sd.style.top=top*20;
+				sd.style.left=left*20;
+				document.body.appendChild(sd);
+				
+				return sd;
+			}
+			
+		function createShapes(){
+			var rand = parseInt(Math.random()*7);
+			
+			var point = shapes[rand].split(",");
+			for(var i =0;i<4;i++)
+			{
+				var x = parseInt(point[i*2]);
+				var y = parseInt(point[i*2+1]);
+				
+				shape[i] = create(x,y);
+			}
+			stop = false;
+			shapet =0;
+			shapel =0;
+		}
+		
+		
+		function getDirect(direct){
+			var d = document.getElementsByTagName("div");
+				var result = 0;
+				for(var i =0; i<d.length;i++)
+				{
+					switch(direct)
+					{
+						case "top":
+						{
+							result = parseInt(d[0].style.top);
+							if(parseInt(d[i].style.top)<result)
+								result = parseInt(d[i].style.top);
+							
+						}
+						
+						break;
+						case "bot":
+						{
+							result = parseInt(d[0].style.top);
+							if(parseInt(d[i].style.top)>result)
+								result = parseInt(d[i].style.top);
+							
+						}
+						
+						break;
+						
+						case "left":
+						{
+							result = parseInt(d[0].style.left);
+							if(parseInt(d[i].style.left)<result)
+								result = parseInt(d[i].style.left);
+							
+						}
+						
+						break;
+						
+						case "right":
+						{
+							result = parseInt(d[0].style.left);
+							if(parseInt(d[i].style.left)>result)
+								result = parseInt(d[i].style.left) ;
+							
+						
+						break;
+						}
+					}
+				}
+				
+				return result;
+		}
+		
+		
+		
+		
+		function move(direct){
+			
+			if(getDirect("bot")>(rows*20-40))
+				stop= true;
+			
+				gameover();
+				
+				if(!stop && !isover)
+				{
+				
+					removefilled();
+					switch(direct)
+					{
+						case "down":
+							getEnd();
+							if(!stop)
+							{
+								for(var i =0; i<shape.length;i++)
+								{
+									var t = parseInt(shape[i].style.top);
+									shape[i].style.top = t+20 +"px";
+									
+									
+								}
+								shapet+=20;
+							}
+						break;
+						
+						case "left":
+							if(getDirect("left")>0&&offset("left"))
+							{
+								for(var i =0; i<shape.length;i++)
+								{
+									var t = parseInt(shape[i].style.left);
+									shape[i].style.left = t-20 +"px";
+									
+								}
+								shapel-=20;
+							}
+						break;
+						
+						case "right":
+							if(getDirect("right")<(cols*20-20)&&offset("right"))
+							{
+								for(var i =0; i<shape.length;i++)
+								{
+									var t = parseInt(shape[i].style.left);
+									shape[i].style.left = t+20 +"px";
+									
+								}
+								shapel+=20;
+							}
+						break;
+						
+						default :
+							getEnd();
+							if(!stop)
+							{
+								for(var i =0; i<shape.length;i++)
+								{
+									var t = parseInt(shape[i].style.top);
+									shape[i].style.top = t+20 +"px";
+									
+									
+								}
+								shapet+=20;
+							}
+						break;
+					
+					}
+				
+				}
+				else
+				{					
+					if(!isover)
+					{
+						for(var i=0;i<shape.length;i++)
+						{	
+							var top = parseInt(shape[i].style.top);
+							var left = parseInt(shape[i].style.left);
+							wi[top/20][left/20].className="die";							
+							
+							document.body.removeChild(shape[i]);
+						}
+						createShapes();
+					}
+				}
+			
+		}
+		
+		function removefilled()
+		{
+			var isfill = false;
+			var fillrow = new Array();
+			for(var i = 0; i<rows;i++)
+			{
+				fillrow[i] = true;
+			}
+			
+			for(var i =0;i<rows;i++)
+			{
+				for(var j=0;j<cols;j++)
+				{
+					if(wi[i][j].className!="die")
+					{
+						fillrow[i] = false;
+					}
+					
+				}
+			}	
+			
+			for(var i =0;i<fillrow.length;i++)
+			{
+				if(fillrow[i])
+				{
+					isfill= true;
+				}
+			}
+			
+			for(var i =0;i<rows;i++)
+			{
+				if(i==0)
+				{
+					for(var j =0;j<cols;j++)
+						{
+							wi[0][j].className="field";
+							
+						}
+				}
+				else
+				{
+					if(fillrow[i])
+					{
+						for(var k = i; k>0;k--)
+						{
+							for(var j =0;j<cols;j++)
+							{
+								wi[k][j].className= wi[k-1][j].className;
+								
+							}
+						}
+						fillrow[i] = false;
+					}
+				}
+			}
+		}
+		
+
+		function getEnd(){
+			for(var i=0;i<4;i++)
+			{
+				var top = parseInt(shape[i].style.top);
+				var left = parseInt(shape[i].style.left);
+				
+				if(wi[top/20+1][left/20].className=="die")
+					stop = true;
+					
+			}
+			
+		}
+		
+		function offset(direct){
+			var canoffset = true;
+			switch(direct)
+			{
+				case "left":
+				for(var i=0;i<4;i++)
+				{
+					var top = parseInt(shape[i].style.top);
+					var left = parseInt(shape[i].style.left);
+					
+					if(wi[top/20][left/20-1].className=="die")
+						canoffset = false;
+					
+				}
+				break;
+				
+				case "right":
+				for(var i=0;i<4;i++)
+				{
+					var top = parseInt(shape[i].style.top);
+					var left = parseInt(shape[i].style.left);
+					
+					if(wi[top/20][left/20+1].className=="die")
+						canoffset = false;
+				
+				}
+				break;
+			}
+			return canoffset;
+		}
+		
+		
+		function gameover(){
+			for(var j=0; j<cols;j++)
+			{
+				
+				if(wi[0][j].className=="die")
+				isover = true;
+				
+			}
+			
+			for(var i =0 ;i<4;i++)
+			{
+				var t = parseInt(shape[i].style.top)/20;
+				var l = parseInt(shape[i].style.left)/20;
+				
+				if(wi[t][l].className=="die")
+				isover = true;
+			}
+		
+			if(isover)
+			{
+				stop = true;
+				clearInterval(interval);
+				alert("game over£¡£¡£¡");
+				
+			}
+			
+		}
+		
+		function rotateShape(){
+			for(var i = 0; i<shape.length; i++)
+			{
+				var tempt = ((parseInt(shape[i].style.top)-shapet)/20);
+				var templ = ((parseInt(shape[i].style.left)-shapel)/20);
+				
+				var t =((templ)*20+shapet) ;
+				var l = ((3-tempt)*20+shapel);
+				
+				shape[i].style.top= t+"px";
+				shape[i].style.left = l+"px";
+				
+			}
+			
+			 var rp = getDirect("right") + 20;
+			 var lp = getDirect("left");
+			 var up = getDirect("up");
+			 var bp = getDirect("bot")+20;
+			 
+			 if(rp>500)
+			 {
+				var movel = rp - cols*20;
+				for(var i = 0 ;i<shape.length;i++)
+				{
+				  var tl = parseInt(shape[i].style.left);
+				  var sl = tl-movel ;
+				  shape[i].style.left = sl+"px";
+				}
+			 }
+			 if(lp<0)
+			 {
+				var movel = -lp;
+				for(var i = 0 ;i<shape.length;i++)
+				{
+				  var tl = parseInt(shape[i].style.left);
+				  var sl = tl+movel ;
+				  shape[i].style.left = sl+"px";
+				}
+			 }
+		
+		}
+		
+		
+		createField();
+		if(!isover)
+		{
+			createShapes();
+			 interval =window.setInterval("move()",200);
+		}
+		window.document.onkeydown= function(e){
+			var e = e || window.event;
+			switch(e.keyCode)
+			{
+				case 32:
+					rotateShape();
+				break;
+				case 37:
+					move("left");
+				break;
+				case 38:					
+				break;
+				case 39:
+					move("right");
+				break;
+				case 40:
+					move();
+				break;
+				case 13:
+					move();					
+				break;
+				
+			}
+		}
+	
+</script>:

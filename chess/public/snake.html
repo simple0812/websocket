@@ -1,0 +1,251 @@
+<html>
+	<style>
+		body { position:relative; background:white; }
+		.bg { width:20px; height:20px; border:1px solid yellow;position:absolute; background:yellow;}
+		.shead { width:20px; height:20px; border:1px solid blue;position:absolute; background:red;}
+		.sbody { width:20px; height:20px; border:1px solid blue;position:absolute; background:gray;}
+		.food {  width:20px; height:20px; border:1px solid blue;position:absolute; background:black; display:block;}
+	</style>
+<body>
+	
+	<input type ="button" class="start" value ="开始游戏" onclick="startgame()" style="position:absolute; z-index:10; top:200px; left:450px;"/>
+</body>
+	<script type="text/javascript">
+		//蛇的坐标	
+		var snake = ["10,6","10,7","10,8"];
+		//场地
+		var field = new Array();
+		//食物
+		var food;
+		//默认的移动方向
+		var sdirect = "right";
+		//游戏是否结束
+		var isover = false;
+		//是否过关
+		var ispass = false;
+		//定时器		
+		var interval;
+		//创建场地
+		
+		function createfield(){		
+			for(var i=0; i<25;i++)
+			{
+				field[i] = new Array();
+				for(var j = 0; j<50; j++)
+				{
+					var s = document.createElement("div");
+					s.className="bg";
+					s.style.top =i*20;
+					s.style.left = j*20;
+					document.body.appendChild(s);
+					
+					field[i][j]=s;
+				}
+			}
+		}
+		
+		function getDirect(){
+			var shead = snake[snake.length-1];
+			var sneck = snake[snake.length-2];
+			
+			var ht = parseInt(shead.split(",")[0]);
+			var hl = parseInt(shead.split(",")[1]);
+			var nt = parseInt(sneck.split(",")[0]);
+			var nl = parseInt(sneck.split(",")[1]);
+			
+			if(ht==nt)
+			{
+				if(hl>nl)
+					sdirect = "right";
+				else
+					sdirect = "left"
+			}
+			else if(hl == nl)
+			{
+				if(ht>nt)
+					sdirect = "down";
+				else
+					sdirect ="up";
+			}
+			
+		}
+		
+		function create(){
+			initfield();
+			for(var i =0; i<snake.length;i++)
+			{
+				var top = snake[i].split(",")[0]
+				var left = snake[i].split(",")[1];
+				
+				(i==snake.length-1)?field[top][left].className="shead":field[top][left].className="sbody";
+				
+			}
+		}
+		
+		//初始化场地
+		function initfield(){
+			for(var i = 0; i<25;i++)
+			{
+				for(var j=0; j<50;j++)
+				{
+					field[i][j].className="bg";
+				}
+			}
+		}
+		
+		function move(direct){
+			if(isover)
+				return;
+			if(ispass)
+				return;
+				
+			var temps = new Array;
+			var tempt;
+			var templ;
+			for(var i=0;i<snake.length-1;i++)
+			{
+				temps[i] = snake[i+1];
+				
+			}
+			
+			switch(direct)
+			{
+				case "right":
+				{									
+					tempt =parseInt(snake[snake.length-1].split(",")[0]);
+					templ = parseInt(snake[snake.length-1].split(",")[1])+1;								
+				}
+				break;
+				
+				case "left":
+					tempt =parseInt(snake[snake.length-1].split(",")[0]);
+					templ = parseInt(snake[snake.length-1].split(",")[1])-1;
+				break;
+				
+				case "up":
+					tempt =parseInt(snake[snake.length-1].split(",")[0])-1;
+					templ = parseInt(snake[snake.length-1].split(",")[1]);
+				break;
+				
+				case "down":
+					tempt =parseInt(snake[snake.length-1].split(",")[0])+1;
+					templ = parseInt(snake[snake.length-1].split(",")[1]);
+				break;			
+				
+			}
+			
+			//判断是否结束游戏
+			if(tempt>24|| templ>49||tempt<0|| templ<0) //超出边界
+			{
+				isover = true;
+				alert("gameover");
+				return;
+			}			
+			
+			var sneck = snake[snake.length-2];
+			var nt = parseInt(sneck.split(",")[0]);
+			var nl = parseInt(sneck.split(",")[1]);
+			if(field[tempt][templ].className =="sbody")//碰到自己
+			{				
+					isover = true;
+					alert("gameover");
+					return;				
+			}
+			//吃食物
+			if(templ*20==parseInt(food.style.left)&&tempt*20 == parseInt(food.style.top))
+			{
+				eatFood();
+			}			
+			else
+			{
+				temps[snake.length-1] = tempt+","+templ;
+				snake = temps;					
+				create();
+			}
+			
+		 }
+		
+		//自动运行
+		function smove(){
+			getDirect();
+			move(sdirect);
+		}
+		
+		
+		//创建食物
+		function createFood(){
+			var ft = parseInt(Math.random()*25);
+			var fl = parseInt(Math.random()*50);
+			var s = document.createElement("span");
+				s.className="food";
+				s.style.top =ft*20;
+				s.style.left = fl*20;
+				document.body.appendChild(s);
+				
+				food =s;
+		}
+		
+		function eatFood(){
+			var temps = snake;
+			var tempt = parseInt(food.style.top)/20;
+			var templ = parseInt(food.style.left)/20;
+			temps[snake.length] = tempt+","+templ;
+			snake = temps;
+			
+			if(snake.length>100)
+			{
+				alert("过关");
+				ispass = true;
+				
+				return;
+			}
+			create();
+			document.body.removeChild(food);
+			createFood();
+			
+		}
+		function startgame(){
+			document.getElementsByTagName("input")[0].style.display="none";
+			createfield();
+			create();
+			createFood();
+			interval = setInterval("smove()",300);
+		}
+		
+		//控制台
+		window.document.onkeydown= function(e){
+			var e = e|| window.event;
+			//alert(e.keyCode);
+			
+			switch(e.keyCode)
+			{
+				case 13:
+				startgame(); //开始游戏
+				break;
+				
+				case 37: //left
+				if(sdirect!="right")
+				move("left");
+				break;
+				
+				case 38:
+				if(sdirect!="down")
+				move("up");
+				break;
+				
+				case 39:
+				if(sdirect!="left")
+				move("right");
+				break;
+				
+				case 40:
+				if(sdirect!="up")
+				move("down");
+				break;
+							
+			}
+			
+		}
+		
+	</script>
+</html>

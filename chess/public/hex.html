@@ -1,0 +1,101 @@
+<script src="lib/underscore.js"></script>
+<script src="lib/helper.js"></script>
+<script src="hex/helper.js"></script>
+<script src="hex/hex.js"></script>
+
+
+<style type="text/css">
+	canvas { background:#fff; border:1px solid #000; margin:auto auto;}
+</style>
+
+<canvas id="field" width="1000px" height="600px"  />
+
+<script type="text/javascript">
+var CVS = document.getElementsByTagName('canvas')[0];
+var CTX= CVS.getContext("2d");
+var WIDTH = 30
+var COS30 = Math.cos(30 / 180 * Math.PI);
+var SIN30 = Math.sin(30 / 180 * Math.PI);
+var HEXS = [];
+
+init(180, 100)
+
+function render() {
+	field.width += 0;
+	for(var i = 0; i< HEXS.length; i++) {
+		for(var j = 0; j< HEXS[i].length; j++) {
+			var coord = HEXS[i][j].coord;
+			drawHex(CTX, coord[0], coord[1], HEXS[i][j].color);
+		}
+	}
+}
+
+function init(x, y) {
+	var t = 0;
+	var offset = 0;
+	index = 0;
+	for(var i = 0; i< 9; i++) {
+		var c = getRowCount(i);
+		var pArr = [];
+		for(var j = 0; j < c; j++) {
+			p = x + COS30 * 2 * WIDTH * j;
+			pArr.push(new Hex(i, j,index++, [p- offset, y + t]))
+		}
+		HEXS.push(pArr);
+
+		t += 3 * WIDTH /2;
+		if(i<4)
+			offset += WIDTH*COS30;
+		else 
+			offset -= WIDTH* COS30;
+	}
+
+	render();
+}
+
+document.getElementById("field").onclick = function(evt) { 
+	var point = windowToCanvas(CVS, evt.clientX, evt.clientY)
+	var hex = getHexByCoord(point.x, point.y);
+	if(!hex) return;
+
+	hex.color = '#666';
+	hex.status = 1;
+
+	render();
+
+	var okArr = [];
+	var arrs = getRows(hex.x, hex.y);
+
+	for(var i = 0; i< arrs.length; i++) {
+		var arr = arrs[i];
+		var p = _.filter(arr, function(item) {
+			var m = item[0]
+			var n = item[1];
+			return HEXS[m][n].status == 0;
+		})
+
+
+		if(!p || p.length == 0) {
+			okArr.push(arr);
+		}
+	}
+
+
+	if(okArr.length == 0 ) return;
+	for(var i = 0; i< okArr.length; i++) {
+		for(var j = 0; j < okArr[i].length; j++) {
+			var ok = okArr[i][j];
+			var t = HEXS[ok[0]][ok[1]];
+			t.status = 0;
+			t.color = '#fff';
+		}
+	}
+
+	setTimeout(function() {
+		render();
+	}, 500)
+
+
+}
+
+</script>

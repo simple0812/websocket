@@ -1,0 +1,86 @@
+<script src="lib/underscore.js"></script>
+<script src="lib/helper.js"></script>
+<script src="lib/guid.js"></script>
+<script src="lib/piece.js"></script>
+<script src="lib/bunch.js"></script>
+<script src="lib/go.js"></script>
+<script src="/socket.io/socket.io.js"></script>
+
+
+<style type="text/css">
+	canvas { background:#fff; border:1px solid #000; margin:auto auto;}
+</style>
+
+<canvas id="field" width="600px" height="600px"  onclick="drop()" />
+
+<script type="text/javascript">
+	var CVS = document.getElementsByTagName('canvas')[0];
+	var CTX= CVS.getContext("2d");
+	var TYPE = -1; //black first
+	var MY_NAME = Math.random();
+	var IS_DONE = false;
+	var PIECES = [];
+	var BUNCHES = [];
+	var hostName = window.location.hostname;
+	var port = window.location.port || 3005;
+	var socket = io.connect('http://'+hostName+':'+ port);
+
+	socket.on('connect', function(err) {
+		init();
+	  	console.log('连接成功')
+	});
+
+	socket.on('mm', function(data) {
+		IS_DONE = data.name == MY_NAME
+	  	var local = windowToCanvas(CVS, data.cx, data.cy);
+		
+		var rx = Math.round(local.x / go.span) * go.span;
+		var ry = Math.round(local.y / go.span) * go.span;
+		
+		if(local.x >= go.span/2 && local.x <= (go.width - go.span/2) && local.y >= go.span/2 && local.y <= (go.height - go.span/2)){
+			var piece = PIECES[rx / go.span - 1 ][ry / go.span -1];
+			
+			if(piece.type) return; 
+			
+			piece.type =  TYPE;
+			piece.process();
+			TYPE = turnType();
+		}
+		
+		go.render();
+	});
+
+	socket.on('clean', function() {
+		field.width += 0;
+		init();
+	})
+
+	
+	function init() {
+		initParams();
+		go.initPieces();
+		go.initBoard();
+	}
+
+	function initParams() {
+		var TYPE = -1; //black first
+		var MY_NAME = Math.random();
+		var IS_DONE = false;
+		var PIECES = [];
+		var BUNCHES = [];
+	}
+
+	function turnType() {
+		return (TYPE == -1 ) ? 1 : -1;
+	}
+	
+	function drop(e){
+		if(!socket || IS_DONE) return;
+		var e = window.event ? window.event : e;
+		var cx = e.clientX;
+		var cy = e.clientY;
+		IS_DONE = true;
+		socket.emit('turn', {cx: cx, cy : cy, type : turnType(), name : MY_NAME });
+	}
+
+</script>
