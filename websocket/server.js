@@ -28,4 +28,6 @@ var server = ws.createServer(function(conn) {
 	conn.on("close", function(code, reason) {
 		console.log("Connection closed")
 	})
-}).listen(8008)
+}).listen(8008, function() {
+	console.log('listen at port 8008')
+})

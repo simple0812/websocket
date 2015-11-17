@@ -29,4 +29,6 @@ io.on('connection', function(socket) {
 	})
 });
 
-server.listen(8002);
+server.listen(8002, function() {
+	console.log('listen at port 8002')
+})
