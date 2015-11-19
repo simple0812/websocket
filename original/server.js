@@ -5,10 +5,12 @@ var crypto = require('crypto');
 var server = net.createServer(function(socket) { //'connection' listener
 	console.log('client connected');
 	socket.on('data', function(buffer) {
+		
+
 		var data = buffer.toString();
 		var headers = headerParser(data);
 
-		if(headers['sec-websocket-key']) { //握手部分
+		if (headers['sec-websocket-key']) { //握手部分
 			var key = headers['sec-websocket-key']
 
 			var sha1 = crypto.createHash('sha1')
@@ -22,6 +24,25 @@ var server = net.createServer(function(socket) { //'connection' listener
 			}))
 		} else { //接受数据
 			console.log('-------------')
+			console.log(buffer)
+			console.log('-------------')
+
+			var i = 0;
+			var found = false
+
+			for (i = 0; i < buffer.length - 3; i++) {
+				if (buffer[i] === 13 && buffer[i + 2] === 13 &&
+					buffer[i + 1] === 10 && buffer[i + 3] === 10) {
+					found = true
+					break
+				}
+			}
+
+			if (!found) {
+				return false
+			}
+
+			data = buffer.slice(i + 4).toString();
 			console.log(data)
 		}
 	});
@@ -59,7 +80,7 @@ function headerParser(str) {
 			ret[key] = value.trim();
 			ret[key.toLowerCase()] = value.trim();
 		}
-			
+
 	})
 
 	return ret;
@@ -68,10 +89,9 @@ function headerParser(str) {
 data = this.buffer.slice(0, i + 4).toString().split('\r\n')
 */
 function buildRequest(requestLine, headers) {
-	var headerString = requestLine + '\r\n',
-		headerName
+	var headerString = requestLine + '\r\n';
 
-	for (headerName in headers) {
+	for (var headerName in headers) {
 		headerString += headerName + ': ' + headers[headerName] + '\r\n'
 	}
 

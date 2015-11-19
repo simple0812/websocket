@@ -19,8 +19,9 @@ var server = ws.createServer(function(conn) {
 	conn.sendText("test|world")
 	
 	conn.on("text", function(str) {
-		var action = str.split('|')[0];
-		var msg = str.split('|')[1] || '';
+		var p = str.split('|');
+		var action = p.shift();
+		var msg = p.join('|');
 
 		handler[action] && handler[action](conn, msg);
 	})

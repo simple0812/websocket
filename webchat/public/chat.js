@@ -6,6 +6,7 @@ var uid = "";
 var name = "";
 
 socket.on('updateChat', function(data) {
+    console.log('*************')
     renderMsg(data);
 })
 
@@ -14,10 +15,6 @@ socket.on('connect', function(data) {
 })
 
 socket.on('updateUser', function(data) {
-    renderUser(data);
-})
-
-socket.on('getUsers', function(data) {
     renderUser(data);
 })
 
@@ -88,9 +85,4 @@ function generateRand(len) {
         res += chars[id];
     }
     return res;
-}
-
-
-window.document.onkeypress = function(e) {
-    if (e.keyCode === 13 && e.ctrlKey) sendMsg();
 }
