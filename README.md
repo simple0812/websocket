@@ -86,3 +86,12 @@
 	ws.onmessage = function(evt){console.log(evt.data);ws.close();};
 	ws.onclose = function(evt){console.log(“WebSocketClosed!”);};
 	ws.onerror = function(evt){console.log(“WebSocketError!”);};
+
+##nodejs WebSocket服务端
+
+* nodejs-websocket
+* websocket  
+* socket.io
+* ...
+
+	

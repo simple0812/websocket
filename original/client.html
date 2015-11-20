@@ -25,7 +25,7 @@
  
             ws.onopen = function(e){
                 mess.innerHTML = "连接成功"
-                ws.send('');
+                // ws.send('11');
             }
 
             ws.onclose = function(e){
@@ -52,7 +52,6 @@
             var time = new Date();
             ws && ws.send('click|' + time + "点击了“" + obj.innerHTML+"”");
         }
-
 
         var handler = {
             click : function(msg) {
