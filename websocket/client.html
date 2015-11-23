@@ -14,11 +14,9 @@
     <div class="kuang">
         <div class="value" id="value1" onclick='send(this)'>小明小明</div>
         <div class="value" id="value2" onclick='send(this)' >王五王五</div>
-        <div class="value" id="value3" onclick='sendex(this)'>小张小张</div>
+        <div class="value" id="value3" onclick='send(this)'>小张小张</div>
     </div>
     <div id='messageBox'></div>
-    <img src='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0' />
- 
     <script>
         var mess = document.getElementById("mess");
         if(window.WebSocket){
@@ -45,47 +43,17 @@
                 mess.innerHTML = "连接成功"
                 console.log(e.data)
                 var data = e.data;
-                if(data.constructor === Blob) {
-                    console.log(data.toString())
-                    // var imageWidth = 150, imageHeight = 150; // hardcoded width & height. 
-                    // var byteArray = new Int8Array(data);
-                      
-                    // var canvas = document.createElement('canvas');
-                    // canvas.height = imageWidth;
-                    // canvas.width = imageHeight;
-                    // var ctx = canvas.getContext('2d');
-                      
-                    // var imageData = ctx.getImageData(0, 0, imageWidth, imageHeight); // total size: imageWidth * imageHeight * 4; color format BGRA
-                    // var dataLen = imageData.data.length;
-                    // for (var i = 0; i < dataLen; i++) {
-                    //     imageData.data[i] = data[i];
-                    // }
-                    // ctx.putImageData(imageData, 0, 0);
-                      
-                    // // create a new element and add it to div
-                    // var image = document.createElement('img');
-                    // image.width = imageWidth;
-                    // image.height = imageHeight;
-                    // image.src = canvas.toDataURL();
-                      
-                    // messageBox.appendChild(image);
-                } else {
-                    if(data.indexOf('|') === -1) return;
+                if(data.indexOf('|') === -1) return;
                     var action = data.split('|')[0];
                     var msg = data.split('|')[1] || '';
 
                     handler[action] && handler[action](msg);
-                }
             }
         }
 
         function send(obj) {
             var time = new Date();
             ws && ws.send('click|' + time + "点击了“" + obj.innerHTML+"”");
-        }
-
-        function sendex(obj) {
-            ws && ws.send('test|xxx');
         }
 
 
